@@ -16,6 +16,8 @@ export default function StatusBar() {
     ? `${state.deviceInfo.name || state.deviceInfo.model} · v${state.deviceInfo.version}`
     : 'Connecting...';
 
+  const appVersion = `v${__APP_VERSION__}`;
+
   return (
     <div style={{
       width: '100%',
@@ -51,6 +53,15 @@ export default function StatusBar() {
           {deviceLabel}
         </span>
       </div>
+
+      {/* App version */}
+      <span style={{
+        fontSize: '0.7rem',
+        color: 'var(--text-tertiary)',
+        flexShrink: 0,
+      }}>
+        {appVersion}
+      </span>
 
       {/* Settings button */}
       <button

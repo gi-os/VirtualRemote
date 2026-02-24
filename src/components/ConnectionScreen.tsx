@@ -5,6 +5,7 @@ import GlassCard from './GlassCard';
 
 export default function ConnectionScreen() {
   const { state, connect } = useConnection();
+  const [host, setHost] = useState('');
   const [username, setUsername] = useState('web-configurator');
   const [password, setPassword] = useState('1234');
 
@@ -12,7 +13,7 @@ export default function ConnectionScreen() {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!loading) connect(username, password);
+    if (!loading) connect(host, username, password);
   };
 
   return (
@@ -41,6 +42,35 @@ export default function ConnectionScreen() {
           flexDirection: 'column',
           gap: 'var(--space-md)',
         }}>
+          <div>
+            <label style={{
+              display: 'block',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              color: 'var(--text-secondary)',
+              marginBottom: '4px',
+            }}>
+              Device IP
+            </label>
+            <input
+              className="glass-input"
+              type="text"
+              value={host}
+              onChange={e => setHost(e.target.value)}
+              placeholder="Leave empty for dev proxy"
+              autoComplete="off"
+              disabled={loading}
+            />
+            <span style={{
+              display: 'block',
+              fontSize: '0.68rem',
+              color: 'var(--text-tertiary)',
+              marginTop: '2px',
+            }}>
+              e.g. 192.168.68.66 — leave empty when using the Vite dev proxy
+            </span>
+          </div>
+
           <div>
             <label style={{
               display: 'block',
@@ -117,6 +147,16 @@ export default function ConnectionScreen() {
           marginTop: 'var(--space-md)',
         }}>
           Credentials are saved locally for auto-reconnect.
+        </p>
+
+        <p style={{
+          textAlign: 'center',
+          fontSize: '0.65rem',
+          color: 'var(--text-tertiary)',
+          marginTop: 'var(--space-xs)',
+          opacity: 0.6,
+        }}>
+          Virtual Remote v{__APP_VERSION__}
         </p>
       </GlassCard>
     </div>

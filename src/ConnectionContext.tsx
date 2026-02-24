@@ -39,7 +39,7 @@ function clearConfig(): void {
 
 interface ConnectionContextValue {
   state: ConnectionState;
-  connect: (username: string, password: string) => Promise<void>;
+  connect: (host: string, username: string, password: string) => Promise<void>;
   disconnect: () => void;
   forgetCredentials: () => void;
   sendButton: (command: string) => Promise<void>;
@@ -71,10 +71,11 @@ const INITIAL_STATE: ConnectionState = {
 export function ConnectionProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<ConnectionState>(INITIAL_STATE);
 
-  const doConnect = useCallback(async (username: string, password: string) => {
+  const doConnect = useCallback(async (host: string, username: string, password: string) => {
     setState(prev => ({ ...prev, status: 'connecting', error: null }));
 
-    // Set Basic Auth credentials for all subsequent API calls
+    // Set API base URL and Basic Auth credentials for all subsequent calls
+    api.setBaseUrl(host);
     api.setCredentials(username, password);
 
     try {
@@ -97,7 +98,7 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
         }
       } catch { /* non-fatal */ }
 
-      saveConfig({ username, password });
+      saveConfig({ host, username, password });
 
       setState({
         status: 'connected',
@@ -154,7 +155,7 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const config = loadConfig();
     if (config) {
-      doConnect(config.username, config.password);
+      doConnect(config.host || '', config.username, config.password);
     }
   }, [doConnect]);
 
