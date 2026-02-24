@@ -40,7 +40,7 @@ function clearConfig(): void {
 interface ConnectionContextValue {
   state: ConnectionState;
   connect: (username: string, password: string) => Promise<void>;
-  disconnect: () => Promise<void>;
+  disconnect: () => void;
   forgetCredentials: () => void;
   sendButton: (command: string) => Promise<void>;
   sendEntityCmd: (entityId: string, cmdId: string, params?: Record<string, unknown>) => Promise<void>;
@@ -74,9 +74,12 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
   const doConnect = useCallback(async (username: string, password: string) => {
     setState(prev => ({ ...prev, status: 'connecting', error: null }));
 
+    // Set Basic Auth credentials for all subsequent API calls
+    api.setCredentials(username, password);
+
     try {
-      await api.login(username, password);
-      const deviceInfo = await api.getVersion();
+      // Verify credentials by hitting a protected endpoint
+      const deviceInfo = await api.verifyAuth();
       const remotes = await api.getRemotes();
       const entityId = remotes.length > 0 ? remotes[0].entity_id : null;
 
@@ -107,6 +110,7 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
         error: null,
       });
     } catch (err) {
+      api.clearCredentials();
       setState(prev => ({
         ...prev,
         status: 'error',
@@ -115,8 +119,8 @@ export function ConnectionProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
-  const disconnect = useCallback(async () => {
-    try { await api.logout(); } catch { /* ignore */ }
+  const disconnect = useCallback(() => {
+    api.clearCredentials();
     setState(INITIAL_STATE);
   }, []);
 

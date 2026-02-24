@@ -1,10 +1,23 @@
 import type { DeviceInfo, RemoteEntity, Entity, Activity, Page } from './types';
 
-const JSON_HEADERS: HeadersInit = { 'Content-Type': 'application/json' };
-const FETCH_OPTS: RequestInit = { credentials: 'include' };
+// Auth via HTTP Basic Auth header on every request (most reliable through proxies).
+// The credentials are set once via setCredentials() and used for all subsequent calls.
 
-function opts(extra?: RequestInit): RequestInit {
-  return { ...FETCH_OPTS, ...extra };
+let _authHeader: string | null = null;
+
+export function setCredentials(username: string, password: string): void {
+  _authHeader = 'Basic ' + btoa(`${username}:${password}`);
+}
+
+export function clearCredentials(): void {
+  _authHeader = null;
+}
+
+function headers(extra?: HeadersInit): HeadersInit {
+  const h: Record<string, string> = { 'Content-Type': 'application/json' };
+  if (_authHeader) h['Authorization'] = _authHeader;
+  if (extra) Object.assign(h, extra);
+  return h;
 }
 
 async function assertOk(res: Response, label: string): Promise<void> {
@@ -14,33 +27,18 @@ async function assertOk(res: Response, label: string): Promise<void> {
   }
 }
 
-// --- Auth ---
+// --- Verify credentials by fetching a protected endpoint ---
 
-export async function login(username: string, password: string): Promise<void> {
-  const res = await fetch('/api/pub/login', opts({
-    method: 'POST',
-    headers: JSON_HEADERS,
-    body: JSON.stringify({ username, password }),
-  }));
-  await assertOk(res, 'Login failed');
-}
-
-export async function logout(): Promise<void> {
-  await fetch('/api/pub/logout', opts({ method: 'POST' })).catch(() => {});
-}
-
-// --- Device info ---
-
-export async function getVersion(): Promise<DeviceInfo> {
-  const res = await fetch('/api/pub/version', opts());
-  await assertOk(res, 'Failed to get version');
+export async function verifyAuth(): Promise<DeviceInfo> {
+  const res = await fetch('/api/pub/version', { headers: headers() });
+  await assertOk(res, 'Authentication failed');
   return res.json();
 }
 
 // --- Remotes ---
 
 export async function getRemotes(): Promise<RemoteEntity[]> {
-  const res = await fetch('/api/remotes', opts());
+  const res = await fetch('/api/remotes', { headers: headers() });
   await assertOk(res, 'Failed to list remotes');
   return res.json();
 }
@@ -48,30 +46,30 @@ export async function getRemotes(): Promise<RemoteEntity[]> {
 // --- Button commands (physical remote) ---
 
 export async function sendCommand(entityId: string, command: string): Promise<void> {
-  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, opts({
+  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, {
     method: 'PUT',
-    headers: JSON_HEADERS,
+    headers: headers(),
     body: JSON.stringify({
       cmd_id: 'remote.send_cmd',
       params: { command },
     }),
-  }));
+  });
   await assertOk(res, `Command "${command}" failed`);
 }
 
 export async function sendPower(entityId: string, action: 'on' | 'off' | 'toggle'): Promise<void> {
-  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, opts({
+  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, {
     method: 'PUT',
-    headers: JSON_HEADERS,
+    headers: headers(),
     body: JSON.stringify({ cmd_id: `remote.${action}` }),
-  }));
+  });
   await assertOk(res, `Power ${action} failed`);
 }
 
 // --- Entities ---
 
 export async function getEntities(): Promise<Entity[]> {
-  const res = await fetch('/api/entities', opts());
+  const res = await fetch('/api/entities', { headers: headers() });
   await assertOk(res, 'Failed to list entities');
   return res.json();
 }
@@ -84,18 +82,18 @@ export async function sendEntityCommand(
   const body: Record<string, unknown> = { cmd_id: cmdId };
   if (params) body.params = params;
 
-  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, opts({
+  const res = await fetch(`/api/entities/${encodeURIComponent(entityId)}/command`, {
     method: 'PUT',
-    headers: JSON_HEADERS,
+    headers: headers(),
     body: JSON.stringify(body),
-  }));
+  });
   await assertOk(res, `Entity command "${cmdId}" failed`);
 }
 
 // --- Activities ---
 
 export async function getActivities(): Promise<Activity[]> {
-  const res = await fetch('/api/activities', opts());
+  const res = await fetch('/api/activities', { headers: headers() });
   await assertOk(res, 'Failed to list activities');
   return res.json();
 }
@@ -104,24 +102,24 @@ export async function sendActivityCommand(
   activityId: string,
   action: 'on' | 'off' | 'toggle',
 ): Promise<void> {
-  const res = await fetch(`/api/activities/${encodeURIComponent(activityId)}/command`, opts({
+  const res = await fetch(`/api/activities/${encodeURIComponent(activityId)}/command`, {
     method: 'PUT',
-    headers: JSON_HEADERS,
+    headers: headers(),
     body: JSON.stringify({ cmd_id: `activity.${action}` }),
-  }));
+  });
   await assertOk(res, `Activity ${action} failed`);
 }
 
 // --- Profiles & pages ---
 
 export async function getProfiles(): Promise<{ profile_id: string; name: string }[]> {
-  const res = await fetch('/api/profiles', opts());
+  const res = await fetch('/api/profiles', { headers: headers() });
   await assertOk(res, 'Failed to list profiles');
   return res.json();
 }
 
 export async function getProfilePages(profileId: string): Promise<Page[]> {
-  const res = await fetch(`/api/profiles/${encodeURIComponent(profileId)}/pages`, opts());
+  const res = await fetch(`/api/profiles/${encodeURIComponent(profileId)}/pages`, { headers: headers() });
   await assertOk(res, 'Failed to get pages');
   return res.json();
 }
