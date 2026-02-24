@@ -1,127 +1,49 @@
-import { useState, useEffect, useRef } from 'react';
-import Sidebar from './components/Sidebar';
-import Overview from './sections/Overview';
-import Authentication from './sections/Authentication';
-import Discovery from './sections/Discovery';
-import EndpointReference from './sections/EndpointReference';
-import SendingCommands from './sections/SendingCommands';
-import WebSocketAPI from './sections/WebSocketAPI';
-import ButtonLayout from './sections/ButtonLayout';
-import CorsProxy from './sections/CorsProxy';
-import Simulator from './sections/Simulator';
-import CommunityProjects from './sections/CommunityProjects';
-import { sections } from './data/sections';
+import { useState } from 'react';
+import { ConnectionProvider, useConnection } from './ConnectionContext';
+import ConnectionScreen from './components/ConnectionScreen';
+import RemoteControl from './components/RemoteControl';
+import DevicesView from './components/DevicesView';
+import StatusBar from './components/StatusBar';
+import TabBar, { type TabId } from './components/TabBar';
 
-export default function App() {
-  const [activeSection, setActiveSection] = useState('overview');
-  const observerRef = useRef<IntersectionObserver | null>(null);
+function AppContent() {
+  const { state } = useConnection();
+  const [tab, setTab] = useState<TabId>('remote');
 
-  // Scroll-spy via IntersectionObserver
-  useEffect(() => {
-    observerRef.current = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        }
-      },
-      { rootMargin: '-20% 0px -60% 0px', threshold: 0 }
-    );
-
-    sections.forEach(s => {
-      const el = document.getElementById(s.id);
-      if (el) observerRef.current!.observe(el);
-    });
-
-    return () => observerRef.current?.disconnect();
-  }, []);
-
-  // Fade-in sections on scroll
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('is-visible');
-          }
-        });
-      },
-      { threshold: 0.05 }
-    );
-
-    document.querySelectorAll('.fade-in-section').forEach(el => observer.observe(el));
-    return () => observer.disconnect();
-  }, []);
+  if (state.status !== 'connected') {
+    return <ConnectionScreen />;
+  }
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar activeSection={activeSection} />
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      minHeight: '100vh',
+      padding: 'var(--space-md)',
+      gap: 'var(--space-md)',
+    }}>
+      <StatusBar />
 
-      <main style={{
-        marginLeft: 'var(--sidebar-width)',
+      <div style={{
         flex: 1,
-        padding: 'var(--space-3xl) var(--space-xl) var(--space-3xl) var(--space-2xl)',
-        maxWidth: 'calc(var(--content-max-width) + var(--space-3xl))',
+        display: 'flex',
+        width: '100%',
+        maxWidth: '600px',
+        justifyContent: 'center',
       }}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--space-3xl)' }}>
-          <div className="fade-in-section is-visible">
-            <Overview />
-          </div>
-          <div className="fade-in-section">
-            <Authentication />
-          </div>
-          <div className="fade-in-section">
-            <Discovery />
-          </div>
-          <div className="fade-in-section">
-            <EndpointReference />
-          </div>
-          <div className="fade-in-section">
-            <SendingCommands />
-          </div>
-          <div className="fade-in-section">
-            <WebSocketAPI />
-          </div>
-          <div className="fade-in-section">
-            <ButtonLayout />
-          </div>
-          <div className="fade-in-section">
-            <CorsProxy />
-          </div>
-          <div className="fade-in-section">
-            <Simulator />
-          </div>
-          <div className="fade-in-section">
-            <CommunityProjects />
-          </div>
-        </div>
+        {tab === 'remote' ? <RemoteControl /> : <DevicesView />}
+      </div>
 
-        {/* Footer */}
-        <footer style={{
-          marginTop: 'var(--space-3xl)',
-          padding: 'var(--space-xl) 0',
-          borderTop: '1px solid var(--glass-border)',
-          fontSize: '0.82rem',
-          color: 'var(--text-tertiary)',
-          textAlign: 'center',
-        }}>
-          <p style={{ color: 'var(--text-tertiary)' }}>
-            Built for the{' '}
-            <a href="https://www.unfoldedcircle.com" target="_blank" rel="noopener noreferrer">
-              Unfolded Circle
-            </a>{' '}
-            Remote 3 · API v0.10.0-beta ·{' '}
-            <a href="https://github.com/unfoldedcircle/core-api" target="_blank" rel="noopener noreferrer">
-              core-api
-            </a>{' '}
-            ·{' '}
-            <a href="https://unfoldedcircle.github.io/core-api/" target="_blank" rel="noopener noreferrer">
-              Developer Guide
-            </a>
-          </p>
-        </footer>
-      </main>
+      <TabBar active={tab} onChange={setTab} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ConnectionProvider>
+      <AppContent />
+    </ConnectionProvider>
   );
 }

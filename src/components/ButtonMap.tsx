@@ -1,5 +1,4 @@
-import { useState } from 'react';
-import { buttons } from '../data/buttons';
+import { useState, useCallback } from 'react';
 
 interface ButtonPos {
   id: string;
@@ -65,150 +64,100 @@ const layout: ButtonPos[] = [
   { id: 'POWER', x: 75, y: 440, w: 50, h: 26, rx: 13, color: zoneColors.power },
 ];
 
-export default function ButtonMap() {
+interface ButtonMapProps {
+  onButtonPress: (buttonId: string) => void;
+}
+
+export default function ButtonMap({ onButtonPress }: ButtonMapProps) {
   const [hovered, setHovered] = useState<string | null>(null);
-  const [copied, setCopied] = useState<string | null>(null);
+  const [pressed, setPressed] = useState<string | null>(null);
 
-  const handleClick = async (id: string) => {
-    await navigator.clipboard.writeText(id);
-    setCopied(id);
-    setTimeout(() => setCopied(null), 1500);
-  };
-
-  const hoveredButton = hovered ? buttons.find(b => b.id === hovered) : null;
+  const handlePress = useCallback((id: string) => {
+    setPressed(id);
+    onButtonPress(id);
+    setTimeout(() => setPressed(null), 200);
+  }, [onButtonPress]);
 
   return (
-    <div style={{ display: 'flex', gap: 'var(--space-xl)', flexWrap: 'wrap', alignItems: 'flex-start' }}>
-      <div style={{ position: 'relative' }}>
-        <svg viewBox="-20 0 240 490" width="240" style={{ filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))' }}>
-          {/* Remote body */}
-          <rect x="10" y="10" width="180" height="470" rx="28" ry="28"
-            fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
+    <svg
+      viewBox="-20 0 240 490"
+      style={{
+        width: '100%',
+        maxWidth: '300px',
+        filter: 'drop-shadow(0 4px 24px rgba(0,0,0,0.4))',
+        touchAction: 'manipulation',
+      }}
+    >
+      {/* Remote body */}
+      <rect x="10" y="10" width="180" height="470" rx="28" ry="28"
+        fill="rgba(255,255,255,0.04)" stroke="rgba(255,255,255,0.12)" strokeWidth="1.5" />
 
-          {/* Screen area */}
-          <rect x="22" y="24" width="156" height="152" rx="14"
-            fill="rgba(79,172,254,0.06)" stroke="rgba(79,172,254,0.15)" strokeWidth="1" />
-          <text x="100" y="95" textAnchor="middle" fill="rgba(255,255,255,0.25)"
-            fontSize="11" fontFamily="var(--font-sans)" fontWeight="500">
-            3.2" Touchscreen
-          </text>
-          <text x="100" y="112" textAnchor="middle" fill="rgba(255,255,255,0.15)"
-            fontSize="8" fontFamily="var(--font-mono)">
-            Touch-driven UI
-          </text>
+      {/* Screen area */}
+      <rect x="22" y="24" width="156" height="152" rx="14"
+        fill="rgba(79,172,254,0.06)" stroke="rgba(79,172,254,0.15)" strokeWidth="1" />
+      <text x="100" y="90" textAnchor="middle" fill="rgba(255,255,255,0.3)"
+        fontSize="12" fontFamily="var(--font-sans)" fontWeight="600">
+        UC Remote 3
+      </text>
+      <text x="100" y="110" textAnchor="middle" fill="rgba(255,255,255,0.15)"
+        fontSize="8" fontFamily="var(--font-mono)">
+        Virtual Remote
+      </text>
 
-          {/* Touch slider */}
-          <rect x="50" y="180" width="100" height="4" rx="2"
-            fill="rgba(255,255,255,0.12)" />
-          <text x="100" y="176" textAnchor="middle" fill="rgba(255,255,255,0.2)"
-            fontSize="7" fontFamily="var(--font-sans)">
-            Capacitive Slider
-          </text>
+      {/* Touch slider */}
+      <rect x="50" y="180" width="100" height="4" rx="2"
+        fill="rgba(255,255,255,0.12)" />
 
-          {/* IR LED indicator */}
-          <circle cx="100" cy="16" r="3" fill="rgba(255,69,58,0.5)" />
+      {/* IR LED indicator */}
+      <circle cx="100" cy="16" r="3" fill="rgba(255,69,58,0.5)" />
 
-          {/* Buttons */}
-          {layout.map(btn => {
-            const isHovered = hovered === btn.id;
-            const isCopied = copied === btn.id;
-            return (
-              <g key={btn.id}
-                onMouseEnter={() => setHovered(btn.id)}
-                onMouseLeave={() => setHovered(null)}
-                onClick={() => handleClick(btn.id)}
-                style={{ cursor: 'pointer' }}
-              >
-                <rect
-                  x={btn.x} y={btn.y} width={btn.w} height={btn.h} rx={btn.rx}
-                  fill={isHovered ? btn.color + '40' : btn.color + '20'}
-                  stroke={isHovered ? btn.color : btn.color + '60'}
-                  strokeWidth={isHovered ? 1.5 : 1}
-                  style={{ transition: 'all 0.2s ease' }}
-                />
-                <text
-                  x={btn.x + btn.w / 2}
-                  y={btn.y + btn.h / 2 + 1}
-                  textAnchor="middle"
-                  dominantBaseline="central"
-                  fill={isHovered ? '#fff' : 'rgba(255,255,255,0.6)'}
-                  fontSize={btn.w < 25 ? 5 : btn.id.length > 8 ? 6 : 7}
-                  fontFamily="var(--font-mono)"
-                  fontWeight="600"
-                  style={{ pointerEvents: 'none', transition: 'fill 0.2s' }}
-                >
-                  {isCopied ? 'Copied!' : btn.id.replace('DPAD_', '').replace('CHANNEL_', 'CH').replace('VOLUME_', 'VOL')}
-                </text>
-              </g>
-            );
-          })}
-        </svg>
-      </div>
+      {/* Buttons */}
+      {layout.map(btn => {
+        const isHovered = hovered === btn.id;
+        const isPressed = pressed === btn.id;
+        const active = isPressed || isHovered;
 
-      {/* Tooltip / info panel */}
-      <div style={{
-        flex: 1,
-        minWidth: '200px',
-        padding: 'var(--space-lg)',
-        background: 'rgba(255,255,255,0.04)',
-        borderRadius: 'var(--glass-radius-sm)',
-        border: '1px solid var(--glass-border)',
-        backdropFilter: 'blur(12px)',
-        minHeight: '120px',
-        transition: 'all var(--transition-normal)',
-      }}>
-        {hoveredButton ? (
-          <>
-            <div style={{
-              fontSize: '0.75rem',
-              color: 'var(--text-tertiary)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.06em',
-              marginBottom: '6px',
-            }}>
-              {hoveredButton.zone} button
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '1.25rem',
-              fontWeight: 700,
-              color: 'var(--accent-cyan)',
-              marginBottom: '8px',
-            }}>
-              {hoveredButton.id}
-            </div>
-            <div style={{
-              fontSize: '0.9rem',
-              color: 'var(--text-secondary)',
-              marginBottom: '12px',
-            }}>
-              {hoveredButton.description}
-            </div>
-            <div style={{
-              fontFamily: 'var(--font-mono)',
-              fontSize: '0.78rem',
-              color: 'var(--text-tertiary)',
-              padding: '8px 12px',
-              background: 'rgba(0,0,0,0.3)',
-              borderRadius: '8px',
-            }}>
-              Supports: <span style={{ color: 'var(--accent-green)' }}>short_press</span>,{' '}
-              <span style={{ color: 'var(--accent-orange)' }}>long_press</span>
-            </div>
-            <div style={{
-              marginTop: '8px',
-              fontSize: '0.75rem',
-              color: 'var(--text-tertiary)',
-            }}>
-              Click to copy API ID
-            </div>
-          </>
-        ) : (
-          <div style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>
-            Hover over a button on the remote to see its API details.
-          </div>
-        )}
-      </div>
-    </div>
+        return (
+          <g key={btn.id}
+            onMouseEnter={() => setHovered(btn.id)}
+            onMouseLeave={() => setHovered(null)}
+            onPointerDown={() => handlePress(btn.id)}
+            style={{ cursor: 'pointer' }}
+          >
+            {/* Invisible larger hit target for touch */}
+            <rect
+              x={btn.x - 4} y={btn.y - 4}
+              width={btn.w + 8} height={btn.h + 8}
+              fill="transparent"
+            />
+            <rect
+              x={btn.x} y={btn.y} width={btn.w} height={btn.h} rx={btn.rx}
+              fill={isPressed ? btn.color + '70' : active ? btn.color + '40' : btn.color + '20'}
+              stroke={active ? btn.color : btn.color + '60'}
+              strokeWidth={isPressed ? 2 : active ? 1.5 : 1}
+              style={{
+                transition: 'all 0.15s ease',
+                filter: isPressed ? `drop-shadow(0 0 6px ${btn.color})` : 'none',
+                transform: isPressed ? 'scale(0.94)' : 'scale(1)',
+                transformOrigin: `${btn.x + btn.w / 2}px ${btn.y + btn.h / 2}px`,
+              }}
+            />
+            <text
+              x={btn.x + btn.w / 2}
+              y={btn.y + btn.h / 2 + 1}
+              textAnchor="middle"
+              dominantBaseline="central"
+              fill={active ? '#fff' : 'rgba(255,255,255,0.6)'}
+              fontSize={btn.w < 25 ? 5 : btn.id.length > 8 ? 6 : 7}
+              fontFamily="var(--font-mono)"
+              fontWeight="600"
+              style={{ pointerEvents: 'none', transition: 'fill 0.15s' }}
+            >
+              {btn.id.replace('DPAD_', '').replace('CHANNEL_', 'CH').replace('VOLUME_', 'VOL')}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
   );
 }

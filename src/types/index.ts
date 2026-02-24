@@ -1,29 +1,4 @@
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD';
-
-export interface ApiEndpoint {
-  id: string;
-  method: HttpMethod;
-  path: string;
-  description: string;
-  category: EndpointCategory;
-  authRequired: boolean;
-  requestBody?: string;
-}
-
-export type EndpointCategory =
-  | 'public'
-  | 'auth'
-  | 'entities'
-  | 'activities'
-  | 'macros'
-  | 'remotes'
-  | 'ir'
-  | 'profiles'
-  | 'integrations'
-  | 'configuration'
-  | 'system'
-  | 'resources'
-  | 'dock';
+// --- Button types (kept from original) ---
 
 export interface ButtonDefinition {
   id: string;
@@ -41,34 +16,60 @@ export type ButtonZone =
   | 'volume'
   | 'power';
 
-export interface CodeExample {
-  id: string;
-  title: string;
-  description: string;
-  language: string;
-  code: string;
-  category: string;
+// --- Connection & auth ---
+
+export interface ConnectionConfig {
+  username: string;
+  password: string;
 }
 
-export interface WsMessageExample {
-  id: string;
-  title: string;
-  kind: 'req' | 'resp' | 'event';
-  description: string;
-  payload: string;
+export type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
+
+export interface ConnectionState {
+  status: ConnectionStatus;
+  entityId: string | null;
+  remotes: RemoteEntity[];
+  deviceInfo: DeviceInfo | null;
+  entities: Entity[];
+  activities: Activity[];
+  pages: Page[];
+  error: string | null;
 }
 
-export interface NavSection {
-  id: string;
-  label: string;
-}
+// --- Device / API response types ---
 
-export interface CommunityProject {
+export interface DeviceInfo {
+  model: string;
+  version: string;
   name: string;
-  url: string;
-  description: string;
-  language: string;
-  official: boolean;
+  serial?: string;
 }
 
-export type SortDirection = 'asc' | 'desc' | null;
+export interface RemoteEntity {
+  entity_id: string;
+  name: Record<string, string>;
+}
+
+export interface Entity {
+  entity_id: string;
+  entity_type: string;
+  name: Record<string, string>;
+  attributes: Record<string, unknown>;
+}
+
+export interface Activity {
+  activity_id: string;
+  name: Record<string, string>;
+  attributes?: Record<string, unknown>;
+}
+
+export interface Page {
+  page_id: string;
+  name: string;
+  items: PageItem[];
+}
+
+export interface PageItem {
+  entity_id: string;
+  position: { x: number; y: number; w?: number; h?: number };
+}

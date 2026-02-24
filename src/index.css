@@ -1,5 +1,5 @@
 /* ============================================================
-   UC Remote 3 API Reference — Liquid Glass Design System
+   UC Remote 3 — Virtual Remote — Liquid Glass Design System
    ============================================================ */
 
 /* --- Reset & Base --- */
@@ -38,14 +38,6 @@
   --accent-yellow: #ffd60a;
   --accent-pink: #ff375f;
   --accent-cyan: #64d2ff;
-
-  /* === HTTP Method Colors === */
-  --method-get: #34c759;
-  --method-post: #ff9f0a;
-  --method-put: #4facfe;
-  --method-patch: #af52de;
-  --method-delete: #ff453a;
-  --method-head: #8e8e93;
 
   /* === Typography === */
   --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Inter', 'Segoe UI', Roboto, sans-serif;
@@ -205,16 +197,65 @@ code {
   background: rgba(255, 255, 255, 0.25);
 }
 
-/* === Scroll animation utility === */
-.fade-in-section {
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s var(--ease-out), transform 0.6s var(--ease-out);
+/* === Glass inputs === */
+.glass-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: var(--glass-radius-sm);
+  border: 1px solid var(--glass-border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast);
 }
 
-.fade-in-section.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+.glass-input:focus {
+  border-color: var(--accent-blue);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.glass-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+.glass-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Glass buttons === */
+.glass-button {
+  padding: 10px 24px;
+  border-radius: var(--glass-radius-sm);
+  border: 1px solid var(--accent-blue);
+  background: rgba(79, 172, 254, 0.15);
+  color: var(--accent-blue);
+  font-family: var(--font-sans);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.glass-button:hover {
+  background: rgba(79, 172, 254, 0.25);
+}
+
+.glass-button:active {
+  transform: scale(0.97);
+}
+
+.glass-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* === Status indicator pulse === */
+@keyframes statusPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
 }
 
 /* === Selection === */
