@@ -1,0 +1,25 @@
+import type { ButtonDefinition } from '../types';
+
+export const buttons: ButtonDefinition[] = [
+  { id: 'BACK', label: 'Back', zone: 'navigation', description: 'Navigate back / return to previous screen' },
+  { id: 'HOME', label: 'Home', zone: 'navigation', description: 'Return to home screen' },
+  { id: 'VOICE', label: 'Voice', zone: 'navigation', description: 'Activate voice assistant' },
+  { id: 'DPAD_UP', label: 'D-Pad Up', zone: 'dpad', description: 'Navigate up' },
+  { id: 'DPAD_DOWN', label: 'D-Pad Down', zone: 'dpad', description: 'Navigate down' },
+  { id: 'DPAD_LEFT', label: 'D-Pad Left', zone: 'dpad', description: 'Navigate left' },
+  { id: 'DPAD_RIGHT', label: 'D-Pad Right', zone: 'dpad', description: 'Navigate right' },
+  { id: 'DPAD_MIDDLE', label: 'OK / Enter', zone: 'dpad', description: 'Confirm / Select / Enter' },
+  { id: 'GREEN', label: 'Green', zone: 'color', description: 'Green function button (customizable)' },
+  { id: 'YELLOW', label: 'Yellow', zone: 'color', description: 'Yellow function button (customizable)' },
+  { id: 'RED', label: 'Red', zone: 'color', description: 'Red function button (customizable)' },
+  { id: 'BLUE', label: 'Blue', zone: 'color', description: 'Blue function button (customizable)' },
+  { id: 'CHANNEL_UP', label: 'Channel Up', zone: 'channel', description: 'Next channel (rocker button)' },
+  { id: 'CHANNEL_DOWN', label: 'Channel Down', zone: 'channel', description: 'Previous channel (rocker button)' },
+  { id: 'MUTE', label: 'Mute', zone: 'media', description: 'Toggle audio mute' },
+  { id: 'PREV', label: 'Previous', zone: 'media', description: 'Previous track / chapter' },
+  { id: 'PLAY', label: 'Play/Pause', zone: 'media', description: 'Toggle playback' },
+  { id: 'NEXT', label: 'Next', zone: 'media', description: 'Next track / chapter' },
+  { id: 'VOLUME_UP', label: 'Volume Up', zone: 'volume', description: 'Increase volume (left side rocker)' },
+  { id: 'VOLUME_DOWN', label: 'Volume Down', zone: 'volume', description: 'Decrease volume (left side rocker)' },
+  { id: 'POWER', label: 'Power', zone: 'power', description: 'Power on/off (hold 2s to turn on)' },
+];
